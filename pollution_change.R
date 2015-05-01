@@ -85,7 +85,6 @@ county.fips$fips[match(map("county", plot = FALSE)$names, county.fips$polyname)]
 
 cnty.fips[1] == as.numeric(NinetyNine[67,1, with=FALSE])
 
-NinetyNineColorsMatched <- NinetyNine$colorbuckets[match(cnty.fips, as.numeric(NinetyNine$fips))]
 
 NinetyNineColorsMatched <- NinetyNine$colorbuckets[match(cnty.fips, as.numeric(NinetyNine$fips))]
 ZeroTwoColorsMatched <- ZeroTwo$colorbuckets[match(cnty.fips, as.numeric(ZeroTwo$fips))]
