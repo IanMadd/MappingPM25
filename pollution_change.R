@@ -1,5 +1,4 @@
-#### first create a data.frame that gives total tons of 2.5PM by year and fips code from NEI dataset
-# for example FIPS 09001 would have have four differnt totals, one for each year. 
+
 
 #download NEI data: https://d396qusza40orc.cloudfront.net/exdata%2Fdata%2FNEI_data.zip
 # Fips county code and county area data (ACS_09_5YR_G001_with_ann.csv) came from factfinder.census.gov
@@ -11,6 +10,9 @@ library("maps")
 library("mapproj")
 
 data(county.fips)
+
+#### first create a data.frame that gives total tons of 2.5PM by year and fips code from NEI dataset
+# for example FIPS 09001 would have have four differnt totals, one for each year. 
 
 NEI <- readRDS('summarySCC_PM25.rds')
 NEI <- data.table(NEI)
