@@ -62,9 +62,9 @@ ZeroFive <- cbind(ZeroFive, divideEmissionsBySqMiles(ZeroFive))
 ZeroEight <- cbind(ZeroEight, divideEmissionsBySqMiles(ZeroEight))
 
 # create a color palette I ended up using one I found in http://colorbrewer2.org
-
 Emissions_palette4 <- c("#1a1a1a", "#4d4d4d", "#878787", "#bababa", 
                         "#e0e0e0", "#fddbc7", "#f4a582", "#d6604d", "#b2182b", "#67001f")
+
 #get the deciles for the Emissions/SqMile for the first year. Basing all years on the first year
 #will show declining emissions over the subsequent years. 
 
@@ -77,14 +77,20 @@ ZeroTwo$colorbuckets <- as.numeric(cut(ZeroTwo$V2, EmissionDecile))
 ZeroFive$colorbuckets <- as.numeric(cut(ZeroFive$V2, EmissionDecile))
 ZeroEight$colorbuckets <- as.numeric(cut(ZeroEight$V2, EmissionDecile))
 
-# matches fips codes from my NEI data set and the data set set that lists county square miles 
+# matches fips codes from my NEI data set and the data map set that lists county square miles 
 cnty.fips <- county.fips$fips[match(map("county", plot=FALSE)$names,
                                     county.fips$polyname)]
 
-NinetyNineColorsMatched <- NinetyNine$colorbuckets[match(cnty.fips, as.numeric(NinetyNine[,1]))]
-ZeroTwoColorsMatched <- ZeroTwo$colorbuckets[match(cnty.fips, as.numeric(ZeroTwo[,1]))]
-ZeroFiveColorsMatched <- ZeroFive$colorbuckets[match(cnty.fips, as.numeric(ZeroFive[,1]))]
-ZeroEightColorsMatched <- ZeroEight$colorbuckets[match(cnty.fips, as.numeric(ZeroEight[,1]))]
+county.fips$fips[match(map("county", plot = FALSE)$names, county.fips$polyname)]
+
+cnty.fips[1] == as.numeric(NinetyNine[67,1, with=FALSE])
+
+NinetyNineColorsMatched <- NinetyNine$colorbuckets[match(cnty.fips, as.numeric(NinetyNine$fips))]
+
+NinetyNineColorsMatched <- NinetyNine$colorbuckets[match(cnty.fips, as.numeric(NinetyNine$fips))]
+ZeroTwoColorsMatched <- ZeroTwo$colorbuckets[match(cnty.fips, as.numeric(ZeroTwo$fips))]
+ZeroFiveColorsMatched <- ZeroFive$colorbuckets[match(cnty.fips, as.numeric(ZeroFive$fips))]
+ZeroEightColorsMatched <- ZeroEight$colorbuckets[match(cnty.fips, as.numeric(ZeroEight$fips))]
 
 # legend text for the final map
 leg.txt <- c("0-.73", ".73-1.11", "1.11-1.44", "1.44-1.80",
@@ -93,7 +99,7 @@ leg.txt <- c("0-.73", ".73-1.11", "1.11-1.44", "1.44-1.80",
 
 #####1999 Map 
 
-png (file = 'PM25Emissions1999.png', width = 800, height = 700, pointsize = 12)
+png (file = 'PM25Emissions1999.png', width = 800, height = 800, pointsize = 12)
 map("county", col = Emissions_palette4[NinetyNineColorsMatched], fill = TRUE, resolution = 0,
     lty = 0, projection = "polyconic")
 
