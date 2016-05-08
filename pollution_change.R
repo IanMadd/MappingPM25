@@ -61,14 +61,14 @@ ZeroTwo <- cbind(ZeroTwo, divideEmissionsBySqMiles(ZeroTwo))
 ZeroFive <- cbind(ZeroFive, divideEmissionsBySqMiles(ZeroFive))
 ZeroEight <- cbind(ZeroEight, divideEmissionsBySqMiles(ZeroEight))
 
+TotalDecile <- c(NinetyNine$V2, ZeroTwo$V2, ZeroFive$V2, ZeroEight$V2)
 # create a color palette I ended up using one I found in http://colorbrewer2.org
-Emissions_palette4 <- c("#1a1a1a", "#4d4d4d", "#878787", "#bababa", 
-                        "#e0e0e0", "#fddbc7", "#f4a582", "#d6604d", "#b2182b", "#67001f")
+Emissions_palette4 <- c("#ffe4e1", "#ffc9bd", "#ffad98", "#ff8f73", "#ff6d4e", "#ff3d21", "#ee0001", "#cb0002", "#ab0002", "#8b0000")
 
 #get the deciles for the Emissions/SqMile for the first year. Basing all years on the first year
 #will show declining emissions over the subsequent years. 
 
-EmissionDecile <- quantile(NinetyNine$V2, probs=seq(0,1, by=0.1), na.rm = TRUE)
+EmissionDecile <- quantile(TotalDecile, probs=seq(0,1, by=0.1), na.rm = TRUE)
 
 #create a column in each table called colorbuckets that sorts each fips county
 #into one of the deciles
@@ -100,7 +100,7 @@ leg.txt <- c("0-.73", ".73-1.11", "1.11-1.44", "1.44-1.80",
 
 png (file = 'PM25Emissions1999.png', width = 800, height = 800, pointsize = 12)
 map("county", col = Emissions_palette4[NinetyNineColorsMatched], fill = TRUE, resolution = 0,
-    lty = 0, projection = "polyconic")
+    lty = 0, projection = "polyconic", myborder = 1)
 
 map("state", col = "white", fill = FALSE, add = TRUE, lty = 1, lwd = 0.2,
     projection="polyconic")
