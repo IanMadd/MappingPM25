@@ -1,0 +1,79 @@
+---
+title: "Mapping PM 2.5 Emissions (Part 2)"
+author: "Ian Maddaus"
+output: html_document
+---
+
+```{r, cache=TRUE, echo=FALSE}
+library("data.table")
+library("colorspace")
+library("mapproj")
+library("maps")
+data(county.fips)
+NEI <- readRDS('summarySCC_PM25.rds')
+NEI <- data.table(NEI)
+countyfips <- fread('ACS_09_5YR_G001_with_ann.csv', header = TRUE)
+setnames(countyfips, old = colnames(countyfips), new = as.character(countyfips[1,]))
+countyfips <- countyfips [-1, ]
+NEI_fips_year_aggregate <- as.data.table(NEI[, j = list(Emissions = sum(Emissions, na.rm = TRUE)), by = list(fips, year)])
+NinetyNine <- NEI_fips_year_aggregate[NEI_fips_year_aggregate$year == 1999, ]
+ZeroTwo <- NEI_fips_year_aggregate[NEI_fips_year_aggregate$year == 2002, ]
+ZeroFive <- NEI_fips_year_aggregate[NEI_fips_year_aggregate$year == 2005, ] 
+ZeroEight <- NEI_fips_year_aggregate[NEI_fips_year_aggregate$year == 2008, ]
+divideEmissionsBySqMiles <- function (emissionsdata,  SqMilesData = countyfips) {
+  vec <- numeric()
+  x <- 0
+  for (i in emissionsdata$fips){  
+    x <- x + 1
+    vec <- append(vec, emissionsdata[emissionsdata$fips == i, Emissions] / as.numeric(SqMilesData[SqMilesData$Id2 == i, 38, with = FALSE ]))        
+  } 
+  return (vec)
+}
+NinetyNine <- cbind(NinetyNine, divideEmissionsBySqMiles(NinetyNine))
+ZeroTwo <- cbind(ZeroTwo, divideEmissionsBySqMiles(ZeroTwo))
+ZeroFive <- cbind(ZeroFive, divideEmissionsBySqMiles(ZeroFive))
+ZeroEight <- cbind(ZeroEight, divideEmissionsBySqMiles(ZeroEight))
+```
+
+Read the population estimate data into R. Because the census is conducted only once every 10 years the data for these years are estimates. 
+
+```{r, cache=TRUE}
+CensusEstimate9899 <- fread('9899CensusEstimate.csv', header = TRUE)
+CensusEstimate0008 <- fread('CO-EST2008-ALLDATA.csv', header = TRUE)
+```
+
+The population data in the 98 - 99 data set is character data and has commas as a thousands separator. Just using the as.numeric function will return NA's because it can't handle the commas. First remove the commas using gsub then convert to numeric data. 
+
+```{r, cache=TRUE}
+CensusEstimate9899$`7/1/99 Estimate` <- as.numeric(gsub(",", "", CensusEstimate9899$`7/1/99 Estimate`))
+```
+
+
+
+Now we take the Emissions / SqMile data and divide it by the population of each county. Similar to the divideEmissionsBySqMiles function, this function finds the emissions / SqMile data and divides it by the population of each county by finding the population of each county.
+
+```{r, cache=TRUE}
+divideEmissionsPerSqMileByPop <- function (emissionsData,  popData) {
+  vec <- numeric()
+  x <- 0
+  for (i in emissionsData$fips){
+    x <- x + 1
+    vec <- append(vec, emissionsData[emissionsData$fips == i, emissionsSqMilePop] / as.numeric(popData[popData$Fips == i, 4, with = FALSE ]))   
+  } 
+  return(vec)
+}
+```
+
+Cbind the results of the function to the NinetyNine data.table.
+
+```{r, cache=TRUE}
+NinetyNine <- cbind(NinetyNine, emissionsSqMilePopTons = divideEmissionsPerSqMileByPop(NinetyNine, CensusEstimate9899))
+head(NinetyNine)
+```
+
+Create a new column in pounds instead of tons.
+
+```{r}
+NinetyNine <- cbind(NinetyNine, emissionsSqMilePopPounds = NinetyNine$emissionsSqMilePopTons * 2000)
+```
+

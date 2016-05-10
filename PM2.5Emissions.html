@@ -217,18 +217,18 @@ head(NinetyNine)</code></pre>
 <p><br></p>
 <p>Now run divideEmissionsBySqMiles and cbind the vector results to each years data.table</p>
 <p><br></p>
-<pre class="r"><code>NinetyNine &lt;- cbind(NinetyNine, divideEmissionsBySqMiles(NinetyNine))
-ZeroTwo &lt;- cbind(ZeroTwo, divideEmissionsBySqMiles(ZeroTwo))
-ZeroFive &lt;- cbind(ZeroFive, divideEmissionsBySqMiles(ZeroFive))
-ZeroEight &lt;- cbind(ZeroEight, divideEmissionsBySqMiles(ZeroEight))
+<pre class="r"><code>NinetyNine &lt;- cbind(NinetyNine, emissionsSqMiles = divideEmissionsBySqMiles(NinetyNine))
+ZeroTwo &lt;- cbind(ZeroTwo, emissionsSqMiles = divideEmissionsBySqMiles(ZeroTwo))
+ZeroFive &lt;- cbind(ZeroFive, emissionsSqMiles = divideEmissionsBySqMiles(ZeroFive))
+ZeroEight &lt;- cbind(ZeroEight, emissionsSqMiles = divideEmissionsBySqMiles(ZeroEight))
 head(NinetyNine)</code></pre>
-<pre><code>##     fips year Emissions       V2
-## 1: 09001 1999  5205.503 8.330844
-## 2: 09003 1999  5791.588 7.878115
-## 3: 09005 1999  2168.551 2.355625
-## 4: 09007 1999  1905.879 5.161123
-## 5: 09009 1999  4377.132 7.239105
-## 6: 09011 1999  4123.281 6.201430</code></pre>
+<pre><code>##     fips year Emissions emissionsSqMiles
+## 1: 09001 1999  5205.503         8.330844
+## 2: 09003 1999  5791.588         7.878115
+## 3: 09005 1999  2168.551         2.355625
+## 4: 09007 1999  1905.879         5.161123
+## 5: 09009 1999  4377.132         7.239105
+## 6: 09011 1999  4123.281         6.201430</code></pre>
 <p><br></p>
 </div>
 <div id="showing-the-data" class="section level3">
@@ -238,7 +238,7 @@ head(NinetyNine)</code></pre>
 <p><br></p>
 <p>I’m putting each county into one of 10 different emissions brackets depending on the level of emissions. This step will create one long list of all the Emissions/SqMile for the four years in the data set, then divide the full list into ten equal groups.</p>
 <p><br></p>
-<pre class="r"><code>TotalDecile &lt;- c(NinetyNine$V2, ZeroTwo$V2, ZeroFive$V2, ZeroEight$V2)
+<pre class="r"><code>TotalDecile &lt;- c(NinetyNine$emissionsSqMiles, ZeroTwo$emissionsSqMiles, ZeroFive$emissionsSqMiles, ZeroEight$emissionsSqMiles)
 EmissionDecile &lt;- quantile(TotalDecile, probs=seq(0,1, by=0.1), na.rm = TRUE)
 EmissionDecile</code></pre>
 <pre><code>##           0%          10%          20%          30%          40% 
@@ -250,18 +250,18 @@ EmissionDecile</code></pre>
 <p><br></p>
 <p>Now create a column in each table called colorbuckets that sorts each fips county into one of the deciles</p>
 <p><br></p>
-<pre class="r"><code>NinetyNine$colorbuckets &lt;- as.numeric(cut(NinetyNine$V2, EmissionDecile))
-ZeroTwo$colorbuckets &lt;- as.numeric(cut(ZeroTwo$V2, EmissionDecile))
-ZeroFive$colorbuckets &lt;- as.numeric(cut(ZeroFive$V2, EmissionDecile))
-ZeroEight$colorbuckets &lt;- as.numeric(cut(ZeroEight$V2, EmissionDecile))
+<pre class="r"><code>NinetyNine$colorbuckets &lt;- as.numeric(cut(NinetyNine$emissionsSqMiles, EmissionDecile))
+ZeroTwo$colorbuckets &lt;- as.numeric(cut(ZeroTwo$emissionsSqMiles, EmissionDecile))
+ZeroFive$colorbuckets &lt;- as.numeric(cut(ZeroFive$emissionsSqMiles, EmissionDecile))
+ZeroEight$colorbuckets &lt;- as.numeric(cut(ZeroEight$emissionsSqMiles, EmissionDecile))
 head(NinetyNine)</code></pre>
-<pre><code>##     fips year Emissions       V2 colorbuckets
-## 1: 09001 1999  5205.503 8.330844           10
-## 2: 09003 1999  5791.588 7.878115           10
-## 3: 09005 1999  2168.551 2.355625            6
-## 4: 09007 1999  1905.879 5.161123            9
-## 5: 09009 1999  4377.132 7.239105            9
-## 6: 09011 1999  4123.281 6.201430            9</code></pre>
+<pre><code>##     fips year Emissions emissionsSqMiles colorbuckets
+## 1: 09001 1999  5205.503         8.330844           10
+## 2: 09003 1999  5791.588         7.878115           10
+## 3: 09005 1999  2168.551         2.355625            7
+## 4: 09007 1999  1905.879         5.161123            9
+## 5: 09009 1999  4377.132         7.239105           10
+## 6: 09011 1999  4123.281         6.201430           10</code></pre>
 <p><br></p>
 <p>Match the fips codes from the NEI data set and the data map set that lists county square miles.</p>
 <p><br></p>
@@ -284,8 +284,8 @@ ZeroEightColorsMatched &lt;- ZeroEight$colorbuckets[match(cnty.fips, as.numeric(
 <p><br></p>
 <p>This will create text that will go in the legend of the maps.</p>
 <p><br></p>
-<pre class="r"><code>leg.txt &lt;- c(&quot;0-.73&quot;, &quot;.73-1.11&quot;, &quot;1.11-1.44&quot;, &quot;1.44-1.80&quot;,
-             &quot;1.80-2.20&quot;, &quot;2.20-2.66&quot;, &quot;2.66-3.35&quot;, &quot;3.35-4.59&quot;, &quot;4.59-7.78&quot;, &quot;&gt;7.78&quot;)</code></pre>
+<pre class="r"><code>leg.txt &lt;- c(&quot;0-.39&quot;, &quot;.39-.66&quot;, &quot;.66-.95&quot;, &quot;.95-1.26&quot;,
+             &quot;1.26-1.59&quot;, &quot;1.59-1.99&quot;, &quot;1.99-2.51&quot;, &quot;2.51-3.38&quot;, &quot;3.38-5.47&quot;, &quot;&gt;5.47&quot;)</code></pre>
 <p><br> <br></p>
 </div>
 <div id="emissions-map" class="section level3">

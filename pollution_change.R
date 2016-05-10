@@ -6,8 +6,8 @@
 
 library("data.table")
 library("colorspace")
-library("maps")
 library("mapproj")
+library("maps")
 
 data(county.fips)
 
@@ -16,6 +16,8 @@ data(county.fips)
 
 NEI <- readRDS('summarySCC_PM25.rds')
 NEI <- data.table(NEI)
+
+
 countyfips <- fread('ACS_09_5YR_G001_with_ann.csv', header = TRUE)
 setnames(countyfips, old = colnames(countyfips), new = as.character(countyfips[1,]))
 countyfips <- countyfips [-1, ]
@@ -23,6 +25,7 @@ countyfips <- countyfips [-1, ]
 # aggregates data returning total tons by fips and year 
 #(see for more info about data.table aggregation http://rprogramming.net/aggregate-data-in-r-using-data-table/): 
 NEI_fips_year_aggregate <- as.data.table(NEI[, j = list(Emissions = sum(Emissions, na.rm = TRUE)), by = list(fips, year)])
+
 
 # I noticed that the county with the highest amount of PM2.5 emissions was the Yukon-Koyukuk Census Area in AK.
 # This county has an area of 147,000 sq miles. It didn't make sense to me for an area that large to grow brighter than 
@@ -56,33 +59,33 @@ divideEmissionsBySqMiles <- function (emissionsdata,  SqMilesData = countyfips) 
 
 #cbind the vector results to the data.table
 
-NinetyNine <- cbind(NinetyNine, divideEmissionsBySqMiles(NinetyNine))
-ZeroTwo <- cbind(ZeroTwo, divideEmissionsBySqMiles(ZeroTwo))
-ZeroFive <- cbind(ZeroFive, divideEmissionsBySqMiles(ZeroFive))
-ZeroEight <- cbind(ZeroEight, divideEmissionsBySqMiles(ZeroEight))
+NinetyNine <- cbind(NinetyNine, emissionsSqMiles = divideEmissionsBySqMiles(NinetyNine))
+ZeroTwo <- cbind(ZeroTwo, emissionsSqMiles = divideEmissionsBySqMiles(ZeroTwo))
+ZeroFive <- cbind(ZeroFive, emissionsSqMiles = divideEmissionsBySqMiles(ZeroFive))
+ZeroEight <- cbind(ZeroEight, emissionsSqMiles = divideEmissionsBySqMiles(ZeroEight))
 
-TotalDecile <- c(NinetyNine$V2, ZeroTwo$V2, ZeroFive$V2, ZeroEight$V2)
+
 # create a color palette I ended up using one I found in http://colorbrewer2.org
 Emissions_palette4 <- c("#ffe4e1", "#ffc9bd", "#ffad98", "#ff8f73", "#ff6d4e", "#ff3d21", "#ee0001", "#cb0002", "#ab0002", "#8b0000")
 
 #get the deciles for the Emissions/SqMile for the first year. Basing all years on the first year
 #will show declining emissions over the subsequent years. 
 
+TotalDecile <- c(NinetyNine$emissionsSqMiles, ZeroTwo$emissionsSqMiles, ZeroFive$emissionsSqMiles, ZeroEight$emissionsSqMiles)
 EmissionDecile <- quantile(TotalDecile, probs=seq(0,1, by=0.1), na.rm = TRUE)
+
 
 #create a column in each table called colorbuckets that sorts each fips county
 #into one of the deciles
-NinetyNine$colorbuckets <- as.numeric(cut(NinetyNine$V2, EmissionDecile))
-ZeroTwo$colorbuckets <- as.numeric(cut(ZeroTwo$V2, EmissionDecile))
-ZeroFive$colorbuckets <- as.numeric(cut(ZeroFive$V2, EmissionDecile))
-ZeroEight$colorbuckets <- as.numeric(cut(ZeroEight$V2, EmissionDecile))
+NinetyNine$colorbuckets <- as.numeric(cut(NinetyNine$emissionsSqMiles, EmissionDecile))
+ZeroTwo$colorbuckets <- as.numeric(cut(ZeroTwo$emissionsSqMiles, EmissionDecile))
+ZeroFive$colorbuckets <- as.numeric(cut(ZeroFive$emissionsSqMiles, EmissionDecile))
+ZeroEight$colorbuckets <- as.numeric(cut(ZeroEight$emissionsSqMiles, EmissionDecile))
 
 # matches fips codes from my NEI data set and the data map set that lists county square miles 
 cnty.fips <- county.fips$fips[match(map("county", plot=FALSE)$names,
                                     county.fips$polyname)]
-
-county.fips$fips[match(map("county", plot = FALSE)$names, county.fips$polyname)]
-
+head(county.fips$fips[match(map("county", plot = FALSE)$names, county.fips$polyname)])
 cnty.fips[1] == as.numeric(NinetyNine[67,1, with=FALSE])
 
 
@@ -92,24 +95,18 @@ ZeroFiveColorsMatched <- ZeroFive$colorbuckets[match(cnty.fips, as.numeric(ZeroF
 ZeroEightColorsMatched <- ZeroEight$colorbuckets[match(cnty.fips, as.numeric(ZeroEight$fips))]
 
 # legend text for the final map
-leg.txt <- c("0-.73", ".73-1.11", "1.11-1.44", "1.44-1.80",
-             "1.80-2.20", "2.20-2.66", "2.66-3.35", "3.35-4.59", "4.59-7.78", ">7.78")
+leg.txt <- c("0-.39", ".39-.66", ".66-.95", ".95-1.26",
+             "1.26-1.59", "1.59-1.99", "1.99-2.51", "2.51-3.38", "3.38-5.47", ">5.47")
 
 
 #####1999 Map 
 
-png (file = 'PM25Emissions1999.png', width = 800, height = 800, pointsize = 12)
-map("county", col = Emissions_palette4[NinetyNineColorsMatched], fill = TRUE, resolution = 0,
-    lty = 0, projection = "polyconic", myborder = 1)
-
-map("state", col = "white", fill = FALSE, add = TRUE, lty = 1, lwd = 0.2,
-    projection="polyconic")
-
-title("PM2.5 Emissions in Tons / SQ Mile / Year - 1999")
-legend("top", fill = (Emissions_palette4), legend = (leg.txt), ncol = 2)
-
-dev.off()
-
+png (file = 'PM25Emissions1999.png', width = 800, height = 800, pointsize = 12)  
+map("county", col = Emissions_palette4[NinetyNineColorsMatched], fill = TRUE, resolution = 0, lty = 0, projection = "polyconic") 
+map("state", col = "white", fill = FALSE, add = TRUE, lty = 1, lwd = 0.2, projection="polyconic")  
+title("PM2.5 Emissions in Tons / SQ Mile / Year - 1999")  
+legend("top", fill = (Emissions_palette4), legend = (leg.txt), ncol = 2)  
+dev.off() 
 
 
 #####2002 Map

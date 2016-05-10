@@ -124,10 +124,10 @@ Now run divideEmissionsBySqMiles and cbind the vector results to each years data
 <br>
 
 ```{r, cache=TRUE}
-NinetyNine <- cbind(NinetyNine, divideEmissionsBySqMiles(NinetyNine))
-ZeroTwo <- cbind(ZeroTwo, divideEmissionsBySqMiles(ZeroTwo))
-ZeroFive <- cbind(ZeroFive, divideEmissionsBySqMiles(ZeroFive))
-ZeroEight <- cbind(ZeroEight, divideEmissionsBySqMiles(ZeroEight))
+NinetyNine <- cbind(NinetyNine, emissionsSqMiles = divideEmissionsBySqMiles(NinetyNine))
+ZeroTwo <- cbind(ZeroTwo, emissionsSqMiles = divideEmissionsBySqMiles(ZeroTwo))
+ZeroFive <- cbind(ZeroFive, emissionsSqMiles = divideEmissionsBySqMiles(ZeroFive))
+ZeroEight <- cbind(ZeroEight, emissionsSqMiles = divideEmissionsBySqMiles(ZeroEight))
 head(NinetyNine)
 ```
 <br>
@@ -148,7 +148,7 @@ I'm putting each county into one of 10 different emissions brackets depending on
 
 <br>
 ```{r, cache=TRUE}
-TotalDecile <- c(NinetyNine$V2, ZeroTwo$V2, ZeroFive$V2, ZeroEight$V2)
+TotalDecile <- c(NinetyNine$emissionsSqMiles, ZeroTwo$emissionsSqMiles, ZeroFive$emissionsSqMiles, ZeroEight$emissionsSqMiles)
 EmissionDecile <- quantile(TotalDecile, probs=seq(0,1, by=0.1), na.rm = TRUE)
 EmissionDecile
 ```
@@ -160,10 +160,10 @@ Now create a column in each table called colorbuckets that sorts each fips count
 <br>
 
 ```{r, cache=TRUE}
-NinetyNine$colorbuckets <- as.numeric(cut(NinetyNine$V2, EmissionDecile))
-ZeroTwo$colorbuckets <- as.numeric(cut(ZeroTwo$V2, EmissionDecile))
-ZeroFive$colorbuckets <- as.numeric(cut(ZeroFive$V2, EmissionDecile))
-ZeroEight$colorbuckets <- as.numeric(cut(ZeroEight$V2, EmissionDecile))
+NinetyNine$colorbuckets <- as.numeric(cut(NinetyNine$emissionsSqMiles, EmissionDecile))
+ZeroTwo$colorbuckets <- as.numeric(cut(ZeroTwo$emissionsSqMiles, EmissionDecile))
+ZeroFive$colorbuckets <- as.numeric(cut(ZeroFive$emissionsSqMiles, EmissionDecile))
+ZeroEight$colorbuckets <- as.numeric(cut(ZeroEight$emissionsSqMiles, EmissionDecile))
 head(NinetyNine)
 ```
 
@@ -197,8 +197,8 @@ This will create text that will go in the legend of the maps.
 <br>
 
 ```{r, cache=TRUE}
-leg.txt <- c("0-.73", ".73-1.11", "1.11-1.44", "1.44-1.80",
-             "1.80-2.20", "2.20-2.66", "2.66-3.35", "3.35-4.59", "4.59-7.78", ">7.78")
+leg.txt <- c("0-.39", ".39-.66", ".66-.95", ".95-1.26",
+             "1.26-1.59", "1.59-1.99", "1.99-2.51", "2.51-3.38", "3.38-5.47", ">5.47")
 ```
 
 
