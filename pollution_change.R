@@ -6,8 +6,9 @@
 
 library("data.table")
 library("colorspace")
-library("mapproj")
 library("maps")
+library("mapproj")
+
 
 data(county.fips)
 
