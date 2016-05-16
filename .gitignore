@@ -1,3 +1,11 @@
 .Rproj.user
 .Rhistory
 .RData
+
+*.rdx
+
+*.RData
+
+*.rdb
+
+
