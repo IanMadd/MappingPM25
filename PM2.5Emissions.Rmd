@@ -5,7 +5,7 @@ output: html_document
 ---
 <br>
 
-#### Part 2: not completed yet.
+#### Part 2: [Here.](PM25EmissionsPart2.html)
 <br>
 This project will map PM 2.5 emissions by county across the United States.
 

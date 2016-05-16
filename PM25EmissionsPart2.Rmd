@@ -7,12 +7,14 @@ output: html_document
 <br>
 This project will map annual PM 2.5 emissions divided by square miles and population over four years, 1999, 2002, 2005, and 2008.
 <br>
+Part one of this project is [here.](PM2.5Emissions.html)
+<br>
 
 All the data files that I use are available here:
 
-* [1998 - 1999 Census Estimates](9899CensusEstimate.csv)
+* [1998 - 1999 Census Estimates](/assets/9899CensusEstimate.csv)
 
-* [2000 - 2008 Census Data](CO-EST2008-ALLDATA.csv)
+* [2000 - 2008 Census Data](/assets/CO-EST2008-ALLDATA.csv)
 
 This data originally came from here: [https://www.census.gov/popest/data/historical/index.html](https://www.census.gov/popest/data/historical/index.html) 
 
