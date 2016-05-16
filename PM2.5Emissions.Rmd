@@ -14,7 +14,13 @@ The data that we're using comes from these sources:
 
 *  NEI (National Emissions Inventory) data from the EPA: https://d396qusza40orc.cloudfront.net/exdata%2Fdata%2FNEI_data.zip  
 *  Fips county code and county area data (ACS_09_5YR_G001_with_ann.csv) came from factfinder.census.gov  
-* Census population data is available here: https://www.census.gov/popest/index.html  
+
+<br>
+Just grab the data here:
+
+* [NEI Data](summarySCC_PM25.rds)
+
+* [County Fips and Area Data](summarySCC_PM25.rds)
 
 <br>
 
@@ -28,8 +34,8 @@ Start by loading the relevant libraries.
 ```{r, cache=TRUE}
 library("data.table")
 library("colorspace")
-library("mapproj")
 library("maps")
+library("mapproj")
 ```
 <br>
 The maps library has fips county data, load that using the data command. Each county in the country has a unique fips code. 

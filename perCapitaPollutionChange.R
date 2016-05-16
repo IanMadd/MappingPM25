@@ -4,30 +4,29 @@
 CensusEstimate9899 <- fread('9899CensusEstimate.csv', header = TRUE)
 CensusEstimate0008 <- fread('CO-EST2008-ALLDATA.csv', header = TRUE)
 
-#The population data in the 98 - 99 data set is character data and has commas as a thousands separator. Just using the as.numeric function will return NA's because it can't handle the commas. Remove the commas using gsub then convert FIPS codes to five digit integers using sprintf and as.integer
+#The population data in the 98 - 99 data set is character data and has commas as a thousands separator. Just using the as.numeric function will return NA's because it can't handle the commas. Remove the commas using gsub and then convert to numeric data. 
 
-sprintf("%05d", as.integer(gsub(",","",CensusEstimate9899$`7/1/99 Estimate`)))
+CensusEstimate9899$`7/1/99 Estimate`<- as.numeric(gsub(",","",CensusEstimate9899$`7/1/99 Estimate`))
 
+#The FIPS codes are numeric data which sometimes is only 4 digits for codes that start with a 0. Conver to five digit integers using sprintf and as.integer.
 
+CensusEstimate9899$Fips <- sprintf("%05d", as.integer(CensusEstimate9899$Fips))
 
+head(CensusEstimate9899)
 
 #Now we take the Emissions / SqMile data and divide it by the population of each county. Similar to the divideEmissionsBySqMiles function, this function finds the emissions / SqMile data and divides it by the population of each county by finding the population of each county.
 
 
-divideEmissionsPerSqMileByPop99 <- function (emissionsData,  popData) {
-  vec <- numeric()
-  x <- 0
-  for (i in emissionsData$fips){
-    x <- x + 1
-    vec <- append(vec, emissionsData[emissionsData$fips == i, emissionsSqMiles] / as.numeric(popData[popData$Fips == i, 4, with = FALSE ]))   
-  }
-  return(vec)
+vec <- numeric()
+for (i in NinetyNine$fips){
+  vec <- append(vec, NinetyNine[NinetyNine$fips == i, emissionsSqMiles] / as.numeric(CensusEstimate9899[CensusEstimate9899$Fips == i, '7/1/99 Estimate', with=FALSE]))  
 }
 
-#Cbind the results of the function to the NinetyNine data.table.
+head(vec)
 
-NinetyNine <- cbind(NinetyNine, emissionsSqMilePopTons = divideEmissionsPerSqMileByPop99(NinetyNine, CensusEstimate9899))
-head(NinetyNine)
+#Cbind the results of the for loop to the NinetyNine data.table and multiply by 100000 to get tons of emissions per 100,000 people.
+NinetyNine <- cbind(NinetyNine, emissionsSqMilePerCapita = vec * 100000)
+rm(vec,i)
 
 # Get FIPS code in 2000 - 2008 data. The fips code in this data set is split into two columns, State and County. States codes that are less than 10 are just one digit, and county codes that are less than 100 are two or one digit. Use sprintf to make them the correct two and three digit lengths.
 CensusEstimate0008$STATE <- sprintf("%02d", as.integer(CensusEstimate0008$STATE))  
@@ -37,9 +36,6 @@ CensusEstimate0008$COUNTY <- sprintf("%03d", as.integer(CensusEstimate0008$COUNT
 
 CensusEstimate0008$FIPS <- paste(CensusEstimate0008$STATE, CensusEstimate0008$COUNTY, sep="")
 
-# Multiply tons by 2000 to get pounds.
-
-NinetyNine$emissionsSqMilePopPounds <- NinetyNine$emissionsSqMilePopTons * 2000
 
 # Change the divideEmisionsPerSqMileByPop function to work on these 3 columns 
 
@@ -47,56 +43,46 @@ NinetyNine$emissionsSqMilePopPounds <- NinetyNine$emissionsSqMilePopTons * 2000
 # popData is CensusEstimate0008$POPESTIMATE2002, CensusEstimate0008$POPESTIMATE2005, and CensusEstimate0008$POPESTIMATE2008. 2002 is column 12, 2005 is column 15, and 2008 is column 18.
 
 # emissionsData Fips codes are ZeroTwo$fips, etc...
-# popData Fips codes are CensusEstimate0008$FIPS
-# > ZeroTwo$fips[2] == CensusEstimate0008$FIPS[2]
+# populationData Fips codes are CensusEstimate0008$FIPS
+# ZeroTwo$fips[2] == CensusEstimate9899$Fips[3]
 
 
 
-divideEmissionsPerSqMileByPop <- function (emissionsData,  popData, columnNumber) {
+divideEmissionsPerSqMileByPopulation <- function (emissionsData,  populationData, columnNumber) {
   vec <- numeric()
-  fips <- numeric()
-  emissions <- numeric()
-  pop <- numeric()
-  x <- 0
   for (i in emissionsData$fips){
-    x <- x + 1
-    fips <- append(fips, i)
-    emissions <- append(emissions, as.numeric(emissionsData[emissionsData$fips == i, 4, with=FALSE]))
-    pop <- append(pop, as.numeric(popData[popData$FIPS == i, columnNumber, with=FALSE]))  
-    vec <- append(vec, as.numeric(emissionsData[emissionsData$fips == i, 4, with=FALSE]) / as.numeric(popData[popData$FIPS == i, columnNumber, with=FALSE]))   
+    vec <- append(vec, as.numeric(emissionsData[emissionsData$fips == i, 4, with=FALSE]) / as.numeric(populationData[populationData$FIPS == i, columnNumber, with=FALSE]))   
   }
-  #output <- data.table(fips = fips, emissions = emissions, vec = vec, pop=pop)
-  #return(output)
   return(vec)
 }
 
-#Output<- data.table(divideEmissionsPerSqMileByPop(ZeroTwo,CensusEstimate0008, 12))
 
-ZeroTwo <- cbind(ZeroTwo, emissionsSqMilePopPounds = divideEmissionsPerSqMileByPop(ZeroTwo,CensusEstimate0008, 12) * 2000)
+ZeroTwo <- cbind(ZeroTwo, emissionsSqMilePerCapita = divideEmissionsPerSqMileByPopulation(ZeroTwo,CensusEstimate0008, 12) * 100000)
 
-ZeroFive <- cbind(ZeroFive, emissionsSqMilePopPounds = divideEmissionsPerSqMileByPop(ZeroFive,CensusEstimate0008, 15) * 2000)
+ZeroFive <- cbind(ZeroFive, emissionsSqMilePerCapita = divideEmissionsPerSqMileByPopulation(ZeroFive,CensusEstimate0008, 15) * 100000)
 
-ZeroEight <- cbind(ZeroEight, emissionsSqMilePopPounds = divideEmissionsPerSqMileByPop(ZeroEight,CensusEstimate0008, 18) * 2000)
+ZeroEight <- cbind(ZeroEight, emissionsSqMilePerCapita = divideEmissionsPerSqMileByPopulation(ZeroEight,CensusEstimate0008, 18) * 100000)
 
 
 #Decile of Ninety Nine Data Pounds of Emissions
 
-DecileEmissionsCapitaPounds <- quantile(c(NinetyNine$emissionsSqMilePopPounds,ZeroEight$emissionsSqMilePopPounds, ZeroFive$emissionsSqMilePopPounds, ZeroTwo$emissionsSqMilePopPounds), probs=seq(0,1, by=0.1), na.rm = TRUE)
+DecileEmissionsCapitaTons <- quantile(c(NinetyNine$emissionsSqMilePerCapita, ZeroEight$emissionsSqMilePerCapita, ZeroFive$emissionsSqMilePerCapita, ZeroTwo$emissionsSqMilePerCapita), probs=seq(0,1, by=0.1), na.rm = TRUE)
 
 
 #Create color buckets
 
-NinetyNine$colorbucketsPoundsEmissions <- as.numeric(cut(NinetyNine$emissionsSqMilePopPounds, DecileEmissionsCapitaPounds))
-ZeroTwo$colorbucketsPoundsEmissions <- as.numeric(cut(ZeroTwo$emissionsSqMilePopPounds, DecileEmissionsCapitaPounds))
-ZeroFive$colorbucketsPoundsEmissions <- as.numeric(cut(ZeroFive$emissionsSqMilePopPounds, DecileEmissionsCapitaPounds))
-ZeroEight$colorbucketsPoundsEmissions <- as.numeric(cut(ZeroEight$emissionsSqMilePopPounds, DecileEmissionsCapitaPounds))
+NinetyNine$colorbucketsTonsEmissions <- as.numeric(cut(NinetyNine$emissionsSqMilePerCapita, DecileEmissionsCapitaTons))
+ZeroTwo$colorbucketsTonsEmissions <- as.numeric(cut(ZeroTwo$emissionsSqMilePerCapita, DecileEmissionsCapitaTons))
+ZeroFive$colorbucketsTonsEmissions <- as.numeric(cut(ZeroFive$emissionsSqMilePerCapita, DecileEmissionsCapitaTons))
+ZeroEight$colorbucketsTonsEmissions <- as.numeric(cut(ZeroEight$emissionsSqMilePerCapita, DecileEmissionsCapitaTons))
 
-NinetyNineColorsMatched <- NinetyNine$colorbucketsPoundsEmissions[match(cnty.fips, as.numeric(NinetyNine$fips))]
-ZeroTwoColorsMatched <- ZeroTwo$colorbucketsPoundsEmissions[match(cnty.fips, as.numeric(ZeroTwo$fips))]
-ZeroFiveColorsMatched <- ZeroFive$colorbucketsPoundsEmissions[match(cnty.fips, as.numeric(ZeroFive$fips))]
-ZeroEightColorsMatched <- ZeroEight$colorbucketsPoundsEmissions[match(cnty.fips, as.numeric(ZeroEight$fips))]
+NinetyNineColorsMatched <- NinetyNine$colorbucketsTonsEmissions[match(cnty.fips, as.numeric(NinetyNine$fips))]
+ZeroTwoColorsMatched <- ZeroTwo$colorbucketsTonsEmissions[match(cnty.fips, as.numeric(ZeroTwo$fips))]
+ZeroFiveColorsMatched <- ZeroFive$colorbucketsTonsEmissions[match(cnty.fips, as.numeric(ZeroFive$fips))]
+ZeroEightColorsMatched <- ZeroEight$colorbucketsTonsEmissions[match(cnty.fips, as.numeric(ZeroEight$fips))]
 
-EmissionsPerCapitaLegend.txt <- c("0.0-.027", ".027-.045", ".045-.062",".062-.083", ".083-.110",".110-.146", ".146-.195", ".195-.276", ".276-.466", "> .466")
+EmissionsPerCapitaLegend.txt <- c("0-2.39", "2.39-3.79", "3.79-5.2", "5.2-6.71",
+             "6.71-8.51", "8.51-10.92", "10.92-14.19", "14.19-19.66", "19.66-31.73", ">31.73")
 
 #1999 Emissions Map
 
