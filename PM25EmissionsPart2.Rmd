@@ -6,8 +6,11 @@ output: html_document
 
 <br>
 This project will map annual PM 2.5 emissions divided by square miles and population over four years, 1999, 2002, 2005, and 2008.
+
 <br>
-Part one of this project is [here.](PM2.5Emissions.html)
+
+Part 1: [here.](PM2.5Emissions.html)
+
 <br>
 
 All the data files that I use are available here:

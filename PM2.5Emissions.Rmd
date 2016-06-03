@@ -5,9 +5,11 @@ output: html_document
 ---
 <br>
 
-#### Part 2: [Here.](PM25EmissionsPart2.html)
+This project will map PM 2.5 emissions divided by square miles by county across the United States for the years 1999, 2002, 2005, and 2008.
+
 <br>
-This project will map PM 2.5 emissions by county across the United States.
+
+Part 2: [Here.](PM25EmissionsPart2.html)
 
 <br>
 The data that we're using comes from these sources: 
@@ -18,9 +20,9 @@ The data that we're using comes from these sources:
 <br>
 Just grab the data here:
 
-* [NEI Data](summarySCC_PM25.rds)
+* [NEI Data](/assets/summarySCC_PM25.rds)
 
-* [County Fips and Area Data](summarySCC_PM25.rds)
+* [County Fips and Area Data](/assets/ACS_09_5YR_G001_with_ann.csv)
 
 <br>
 
@@ -303,6 +305,6 @@ These maps are fine as far as they go, they do show declines in emissions nation
 
 <br>
 
-####  Part 2: to be continued.
+#### Part 2: [Here.](PM25EmissionsPart2.html)
 
 <br>
